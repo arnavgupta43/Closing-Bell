@@ -3,6 +3,8 @@
 **A serverless pipeline that emails every client a signed PDF contract note after the trading session closes, built to run on a laptop and deploy to AWS.**
 
 > Status: 🚧 design complete, implementation starting. See [Roadmap](#roadmap).
+>
+> Design docs: [High-level design](docs/HLD.md) (requirements, decisions, trade-offs) · [Architecture](docs/ARCHITECTURE.md) (services, workflow, storage, data contracts)
 
 ---
 

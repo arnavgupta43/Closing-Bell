@@ -3,6 +3,8 @@
 **A serverless pipeline that emails every client a signed PDF contract note after the trading session closes, built to run on a laptop and deploy to AWS.**
 
 > Status: 🚧 design complete, implementation starting. See [Roadmap](#roadmap).
+>
+> Design docs: [High-level design](docs/HLD.md) (requirements, decisions, trade-offs) · [Architecture](docs/ARCHITECTURE.md) (services, workflow, storage, data contracts)
 
 ---
 
@@ -113,7 +115,7 @@ Everything runs on a laptop with Docker; no AWS account is needed.
 | Real AWS | Local stand-in |
 |---|---|
 | S3, Lambda, Step Functions, DynamoDB, EventBridge, ECS/Fargate | [LocalStack](https://www.localstack.cloud/) |
-| RDS Postgres (primary + read replica) | Postgres 17 in Docker |
+| RDS Postgres (primary + read replica) | Postgres 17 in Docker: primary + streaming replica |
 | SES | [Mailpit](https://mailpit.axllent.org/) (SMTP + web inbox) |
 
 Email sending sits behind an `EmailSender` interface so Mailpit and SES are swappable.
@@ -124,7 +126,6 @@ The architecture above is built as designed. A few parts are implemented at a sm
 
 | Part | Production design | This build |
 |---|---|---|
-| Read replica | Separate Postgres replica | One Postgres; extract uses a read-only user |
 | Extract parallelism | 8 tasks by user range | Configurable, 2 ranges by default |
 | PDF signing | Digital signature with a DSC certificate | SHA-256 hash plus a "signed by" block; real DSC signing documented, not built |
 | Ops alert | Pager / Slack | A log line from wrap-up |
@@ -144,6 +145,8 @@ Setup and run instructions will land here with the first layer.
 Built in layers; each one runs and is tested before the next starts.
 
 - [ ] **0. Local stack:** docker-compose (LocalStack, Postgres, Mailpit) + smoke tests
+  - [x] Postgres primary + streaming read replica, schema, replication smoke test
+  - [ ] LocalStack, Mailpit
 - [ ] **1. One user → one PDF:** render and (hash-)sign a contract note, unit tested
 - [ ] **2. Batch from S3:** a real Lambda in LocalStack reads a batch, writes PDFs, sends email
 - [ ] **3. Seed + Extract:** synthetic data; keyset-paginated, range-parallel extract; manifest

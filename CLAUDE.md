@@ -40,6 +40,9 @@ Add setup, test and run commands here as each layer lands.
 docker compose up -d          # Postgres primary (:5442) + replica (:5443)
 sh scripts/db-smoke.sh        # replication smoke test (Git Bash)
 docker compose down -v        # stop and wipe data; init scripts rerun on next up
+npm install
+npm run seed -- --date 2026-10-16 --users 10   # synthetic users + trades (defaults shown); rerun-safe
+npm run typecheck
 ```
 
 Schema lives in `db/primary/02-schema.sql` and only runs on an empty volume: after changing it, `down -v` then `up -d`.

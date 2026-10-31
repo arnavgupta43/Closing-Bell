@@ -150,6 +150,8 @@ Built in layers; each one runs and is tested before the next starts.
 - [ ] **1. One user → one PDF:** render and (hash-)sign a contract note, unit tested
 - [ ] **2. Batch from S3:** a real Lambda in LocalStack reads a batch, writes PDFs, sends email
 - [ ] **3. Seed + Extract:** synthetic data; keyset-paginated, range-parallel extract; manifest
+  - [x] Seed script: deterministic users + trades for a given date (`npm run seed`)
+  - [ ] Extract, manifest
 - [ ] **4. Step Functions:** the full workflow with concurrency limits, retries, failure tolerance
 - [ ] **5. Hardening:** idempotency keys, bulk status write, chaos tests asserting no duplicate emails
 - [ ] **6. User path:** API returning a presigned URL for a user's note

@@ -1,7 +1,9 @@
 -- Runs once, on the primary's first start. The replica gets it through replication.
 -- Tables from docs/ARCHITECTURE.md §4.
 
-CREATE TYPE exchange AS ENUM ('NSE', 'BSE');
+CREATE TYPE exchange   AS ENUM ('NSE', 'BSE');
+CREATE TYPE side       AS ENUM ('BUY', 'SELL');
+CREATE TYPE note_state AS ENUM ('SENT', 'FAILED');
 
 CREATE TABLE users (
   id    bigint PRIMARY KEY,
@@ -14,7 +16,7 @@ CREATE TABLE trades (
   user_id    bigint        NOT NULL REFERENCES users (id),
   trade_date date          NOT NULL,
   symbol     text          NOT NULL,
-  side       text          NOT NULL CHECK (side IN ('BUY', 'SELL')),
+  side       side          NOT NULL,
   qty        integer       NOT NULL CHECK (qty > 0),
   price      numeric(12,2) NOT NULL,
   exchange   exchange      NOT NULL,
@@ -27,7 +29,7 @@ CREATE INDEX trades_trade_date_user_id_idx ON trades (trade_date, user_id);
 CREATE TABLE note_status (
   user_id        bigint      NOT NULL REFERENCES users (id),
   trade_date     date        NOT NULL,
-  status         text        NOT NULL CHECK (status IN ('SENT', 'FAILED')),
+  status         note_state  NOT NULL,
   s3_key         text,
   ses_message_id text,
   updated_at     timestamptz NOT NULL DEFAULT now(),

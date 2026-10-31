@@ -40,7 +40,7 @@ Horizontal arrows are control flow; vertical arrows are data.
 | Object storage | S3 | LocalStack S3 |
 | Idempotency | DynamoDB | LocalStack DynamoDB |
 | Email | SES | Mailpit (SMTP on `1025`, inbox UI on `8025`) |
-| Trades + status DB | RDS Postgres (primary + read replica) | Postgres 17 in Docker (read-only user plays the replica) |
+| Trades + status DB | RDS Postgres (primary + read replica) | Two Postgres 17 containers: primary on `5442`, streaming replica on `5443` |
 | User API | Any Node host | Local Node process |
 
 ## 3. Workflow: `contract-notes-daily`
@@ -147,7 +147,10 @@ The PDF is uploaded **before** the email is sent, so an email failure never lose
 
 ```
 Closing-Bell/
-  docker-compose.yml        # localstack, postgres, mailpit
+  docker-compose.yml        # localstack, postgres primary + replica, mailpit
+  db/
+    primary/                # init scripts: replication user + slot, schema
+    replica/                # start-replica.sh: pg_basebackup, then run as standby
   infra/                    # state machine definition, deploy scripts
   packages/
     shared/                 # types, S3/DynamoDB clients, config
@@ -168,7 +171,7 @@ Closing-Bell/
 |---|---|---|
 | LocalStack plan | Needs an auth token; ECS needs the Student plan | n/a |
 | Email | Mailpit catches everything; nothing leaves the laptop | SES sandbox: only verified addresses until production access |
-| Read replica | Same Postgres, read-only user | Separate RDS replica |
+| Read replica | Hand-built async streaming replica (`pg_basebackup` + replication slot) | RDS creates and manages the replica; same async streaming underneath, lag visible as `ReplicaLag` in CloudWatch |
 | Concurrency | 5–10 Lambdas (laptop limits) | Set from the SES quota |
 | Performance numbers | Not meaningful | Measured in the real AWS run |
 | Distributed Map | To be verified in the LocalStack smoke test; fallback is an inline Map over the manifest | Native |
@@ -177,7 +180,6 @@ Closing-Bell/
 
 | Part | Production design | This build |
 |---|---|---|
-| Read replica | Separate Postgres replica | One Postgres; read-only user |
 | Extract parallelism | 8 tasks by user range | Configurable, 2 by default |
 | PDF signing | DSC certificate signature | SHA-256 hash and a "signed by" block |
 | Ops alert | Pager / Slack | Log line from wrap-up |

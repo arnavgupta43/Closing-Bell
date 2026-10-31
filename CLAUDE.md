@@ -28,10 +28,18 @@ Closing Bell: a serverless pipeline that emails every client a signed PDF contra
 ## Local environment
 
 - Windows 11, Docker Desktop (WSL2). Shell commands may run in PowerShell or Git Bash.
-- Postgres for this project is on host port **5442** (5432/5433 are used by another project).
+- Postgres for this project: primary on host port **5442**, read replica on **5443** (5432/5433 are used by another project).
 - Mailpit: SMTP `localhost:1025`, inbox `http://localhost:8025`.
 - LocalStack: `http://localhost:4566`; needs `LOCALSTACK_AUTH_TOKEN` in a gitignored `.env`. Never commit tokens.
 
 ## Commands
 
-None yet. Add setup, test and run commands here as each layer lands.
+Add setup, test and run commands here as each layer lands.
+
+```sh
+docker compose up -d          # Postgres primary (:5442) + replica (:5443)
+sh scripts/db-smoke.sh        # replication smoke test (Git Bash)
+docker compose down -v        # stop and wipe data; init scripts rerun on next up
+```
+
+Schema lives in `db/primary/02-schema.sql` and only runs on an empty volume: after changing it, `down -v` then `up -d`.

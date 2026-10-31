@@ -1,0 +1,44 @@
+# Local stand-ins for the AWS services. See docs/ARCHITECTURE.md §2.
+# Passwords here are local-only throwaways; real secrets go in .env (gitignored).
+
+services:
+  # Writes go here: seed data, wrap-up's bulk COPY into note_status.
+  pg-primary:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: closing_bell
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      REPLICATION_PASSWORD: replicator
+    ports:
+      - "5442:5432"
+    volumes:
+      - pg-primary-data:/var/lib/postgresql/data
+      - ./db/primary:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # -h 127.0.0.1 forces TCP, so it stays "unhealthy" while init scripts
+      # run (the entrypoint's temporary server only listens on a socket).
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "postgres", "-d", "closing_bell"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Reads go here: Extract streams users + trades from the replica.
+  pg-replica:
+    image: postgres:17-alpine
+    user: postgres
+    environment:
+      PGPASSWORD: replicator
+    ports:
+      - "5443:5432"
+    volumes:
+      - pg-replica-data:/var/lib/postgresql/data
+      - ./db/replica/start-replica.sh:/start-replica.sh:ro
+    entrypoint: ["sh", "/start-replica.sh"]
+    depends_on:
+      pg-primary:
+        condition: service_healthy
+
+volumes:
+  pg-primary-data:
+  pg-replica-data:

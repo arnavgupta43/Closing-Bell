@@ -169,7 +169,10 @@ Closing-Bell/
 
 | Area | Local | AWS |
 |---|---|---|
-| LocalStack plan | Needs an auth token; ECS needs the Student plan | n/a |
+| LocalStack plan | Auth token in `.env`; Student license confirmed, so ECS is available | n/a |
+| Resource lifetime | LocalStack keeps nothing across restarts; setup scripts recreate buckets, tables, Lambdas | Resources persist until deleted |
+| Credentials / IAM | Dummy `test`/`test`; IAM permissions not enforced | IAM enforced: permission bugs only show up here |
+| S3 addressing | Path-style (`localhost:4566/bucket/key`) | Virtual-hosted (`bucket.s3.ap-south-1.amazonaws.com/key`); the SDK picks this by default |
 | Email | Mailpit catches everything; nothing leaves the laptop | SES sandbox: only verified addresses until production access |
 | Read replica | Hand-built async streaming replica (`pg_basebackup` + replication slot) | RDS creates and manages the replica; same async streaming underneath, lag visible as `ReplicaLag` in CloudWatch |
 | Concurrency | 5–10 Lambdas (laptop limits) | Set from the SES quota |

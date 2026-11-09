@@ -30,18 +30,21 @@ Closing Bell: a serverless pipeline that emails every client a signed PDF contra
 - Windows 11, Docker Desktop (WSL2). Shell commands may run in PowerShell or Git Bash.
 - Postgres for this project: primary on host port **5442**, read replica on **5443** (5432/5433 are used by another project).
 - Mailpit: SMTP `localhost:1025`, inbox `http://localhost:8025`.
-- LocalStack: `http://localhost:4566`; needs `LOCALSTACK_AUTH_TOKEN` in a gitignored `.env`. Never commit tokens.
+- LocalStack: `http://localhost:4566`, image pinned to `2026.10.6`, Student license (ECS available); needs `LOCALSTACK_AUTH_TOKEN` in a gitignored `.env`. Never commit tokens.
+- AWS region: `ap-south-1`. Locally the SDK uses dummy credentials `test`/`test` and `forcePathStyle: true` for S3.
 
 ## Commands
 
 Add setup, test and run commands here as each layer lands.
 
 ```sh
-docker compose up -d          # Postgres primary (:5442) + replica (:5443)
+cp .env.example .env         # then paste your LocalStack auth token into .env (never .env.example)
+docker compose up -d          # Postgres primary (:5442) + replica (:5443), LocalStack (:4566), Mailpit (:1025/:8025)
 sh scripts/db-smoke.sh        # replication smoke test (Git Bash)
 docker compose down -v        # stop and wipe data; init scripts rerun on next up
 npm install
 npm run seed -- --date 2026-10-16 --users 10   # synthetic users + trades (defaults shown); rerun-safe
+npm run stack-smoke           # LocalStack S3 + Mailpit email round trip
 npm run typecheck
 ```
 

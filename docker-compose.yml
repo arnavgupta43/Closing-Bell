@@ -39,6 +39,26 @@ services:
       pg-primary:
         condition: service_healthy
 
+  # Pretends to be AWS: S3, Lambda, Step Functions, DynamoDB, EventBridge on one port.
+  # Resources are lost when the container stops; setup scripts recreate them.
+  localstack:
+    image: localstack/localstack:2026.10.6
+    ports:
+      - "4566:4566"
+    environment:
+      # Read from .env (gitignored). Compose refuses to start with a clear message if it's missing.
+      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN:?set LOCALSTACK_AUTH_TOKEN in .env}
+    volumes:
+      # LocalStack runs each Lambda as its own container, so it needs to talk to Docker.
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  # Fake mail server: SMTP in on 1025, web inbox on 8025. Nothing leaves the laptop.
+  mailpit:
+    image: axllent/mailpit:v1.33.1
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   pg-primary-data:
   pg-replica-data:

@@ -145,7 +145,7 @@ Setup and run instructions will land here with the first layer.
 Built in layers; each one runs and is tested before the next starts.
 
 - [x] **0. Local stack:** docker-compose (LocalStack, Postgres, Mailpit) + smoke tests
-- [ ] **1. One user → one PDF:** render and (hash-)sign a contract note, unit tested
+- [x] **1. One user → one PDF:** render and (hash-)sign a contract note, unit tested
 - [ ] **2. Batch from S3:** a real Lambda in LocalStack reads a batch, writes PDFs, sends email
 - [ ] **3. Seed + Extract:** synthetic data; keyset-paginated, range-parallel extract; manifest
   - [x] Seed script: deterministic users + trades for a given date (`npm run seed`)

@@ -45,6 +45,8 @@ docker compose down -v        # stop and wipe data; init scripts rerun on next u
 npm install
 npm run seed -- --date 2026-10-16 --users 10   # synthetic users + trades (defaults shown); rerun-safe
 npm run stack-smoke           # LocalStack S3 + Mailpit email round trip
+npm test                      # unit tests (node:test via tsx)
+npm run render-sample         # writes out/sample-note.pdf from the test fixture
 npm run typecheck
 ```
 

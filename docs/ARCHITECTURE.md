@@ -141,7 +141,7 @@ The PDF is uploaded **before** the email is sent, so an email failure never lose
 |---|---|
 | `EmailSender` interface (`send(to, subject, body, attachment)`) | Mailpit locally, SES on AWS, one file to swap |
 | `tradeDate` always passed in | Never read "today" from the clock inside the pipeline, so reruns are correct |
-| PDF rendering as a plain function (user + date → buffer) | Unit-testable without AWS; shared with the RabbitMQ version later |
+| PDF rendering as a plain function: `renderNote(user, tradeDate) → { pdf, hash }` in `packages/pdf-worker/src/render-note.ts` (built) | Unit-testable without AWS; shared with the RabbitMQ version later. Deterministic: PDF `CreationDate` comes from `tradeDate`, so the same input gives identical bytes |
 
 ## 8. Repo layout *(planned)*
 

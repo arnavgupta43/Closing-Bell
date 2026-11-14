@@ -1,0 +1,10 @@
+{
+  "id": "U1042",
+  "email": "user1042@example.com",
+  "name": "Asha Verma",
+  "trades": [
+    { "tradeId": "T9", "symbol": "INFY", "side": "BUY", "qty": 10, "price": 1520.5, "exchange": "NSE", "time": "10:14:03" },
+    { "tradeId": "T15", "symbol": "TCS", "side": "SELL", "qty": 5, "price": 3890.0, "exchange": "NSE", "time": "14:02:41" }
+  ],
+  "charges": { "brokerage": 20, "stt": 15.2, "exchangeTxn": 4.1, "gst": 4.3, "sebi": 0.02, "stampDuty": 2.3 }
+}

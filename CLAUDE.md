@@ -47,6 +47,7 @@ npm run seed -- --date 2026-10-16 --users 10   # synthetic users + trades (defau
 npm run stack-smoke           # LocalStack S3 + Mailpit email round trip
 npm test                      # unit tests (node:test via tsx)
 npm run render-sample         # writes out/sample-note.pdf from the test fixture
+npm run run-batch             # sample batch → LocalStack S3 → PDF worker handler → S3 notes + Mailpit (needs docker up)
 npm run typecheck
 ```
 

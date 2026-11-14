@@ -28,3 +28,16 @@ export type BatchUser = {
   trades: Trade[];
   charges: Charges;
 };
+
+// batches/<tradeDate>/batch-NNNN.json: written by Extract, read by the PDF worker.
+export type Batch = {
+  tradeDate: string;
+  users: BatchUser[];
+};
+
+// What the PDF worker returns for one batch file. Goes to WrapUp, never to Postgres.
+export type BatchResult = {
+  key: string;
+  sent: number;
+  failed: { userId: string; reason: string }[];
+};

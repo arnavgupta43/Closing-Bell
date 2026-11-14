@@ -1,0 +1,44 @@
+{
+  "tradeDate": "2026-10-16",
+  "users": [
+    {
+      "id": "U1042", "email": "user1042@example.com", "name": "Asha Verma",
+      "trades": [
+        { "tradeId": "T9", "symbol": "INFY", "side": "BUY", "qty": 10, "price": 1520.5, "exchange": "NSE", "time": "10:14:03" },
+        { "tradeId": "T15", "symbol": "TCS", "side": "SELL", "qty": 5, "price": 3890.0, "exchange": "NSE", "time": "14:02:41" }
+      ],
+      "charges": { "brokerage": 20, "stt": 15.2, "exchangeTxn": 4.1, "gst": 4.3, "sebi": 0.02, "stampDuty": 2.3 }
+    },
+    {
+      "id": "U1043", "email": "user1043@example.com", "name": "Rohan Mehta",
+      "trades": [
+        { "tradeId": "T21", "symbol": "SBIN", "side": "BUY", "qty": 50, "price": 821.35, "exchange": "NSE", "time": "09:31:12" },
+        { "tradeId": "T22", "symbol": "ITC", "side": "BUY", "qty": 100, "price": 468.9, "exchange": "BSE", "time": "11:47:55" },
+        { "tradeId": "T40", "symbol": "SBIN", "side": "SELL", "qty": 50, "price": 826.1, "exchange": "NSE", "time": "15:12:09" }
+      ],
+      "charges": { "brokerage": 40, "stt": 92.1, "exchangeTxn": 6.2, "gst": 8.32, "sebi": 0.1, "stampDuty": 13.2 }
+    },
+    {
+      "id": "U1044", "email": "user1044@example.com", "name": "Priya Nair",
+      "trades": [
+        { "tradeId": "T31", "symbol": "RELIANCE", "side": "SELL", "qty": 3, "price": 2961.0, "exchange": "NSE", "time": "13:05:40" }
+      ],
+      "charges": { "brokerage": 20, "stt": 8.88, "exchangeTxn": 0.31, "gst": 3.66, "sebi": 0.01, "stampDuty": 0 }
+    },
+    {
+      "id": "U1045", "email": "not-an-email", "name": "Kabir Singh",
+      "trades": [
+        { "tradeId": "T35", "symbol": "LT", "side": "BUY", "qty": 2, "price": 3598.75, "exchange": "NSE", "time": "10:59:18" }
+      ],
+      "charges": { "brokerage": 20, "stt": 7.2, "exchangeTxn": 0.25, "gst": 3.65, "sebi": 0.01, "stampDuty": 1.08 }
+    },
+    {
+      "id": "U1046", "email": "user1046@example.com", "name": "Meera Iyer",
+      "trades": [
+        { "tradeId": "T50", "symbol": "WIPRO", "side": "BUY", "qty": 40, "price": 559.6, "exchange": "NSE", "time": "12:20:00" },
+        { "tradeId": "T51", "symbol": "HDFCBANK", "side": "BUY", "qty": 6, "price": 1683.2, "exchange": "BSE", "time": "14:44:31" }
+      ],
+      "charges": { "brokerage": 40, "stt": 32.5, "exchangeTxn": 1.05, "gst": 7.39, "sebi": 0.03, "stampDuty": 4.88 }
+    }
+  ]
+}

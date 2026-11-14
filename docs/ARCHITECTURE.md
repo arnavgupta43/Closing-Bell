@@ -135,11 +135,14 @@ return { key, sent, failed }
 
 The PDF is uploaded **before** the email is sent, so an email failure never loses the document.
 
+**Built so far (layer 2a):** the loop without the idempotency claim (that lands in layer 5). `processBatch(key, deps)` in `packages/pdf-worker/src/process-batch.ts` takes S3 and email as injected dependencies, so it is unit tested with fakes; `handler.ts` wires in the real S3 client and `SmtpEmailSender`. Users are processed one at a time: parallelism comes from many Lambdas, and the email quota sets the pace anyway. Until layer 5, invoking the same batch twice sends duplicate emails.
+
 ## 7. Code boundaries
 
 | Boundary | Why it exists |
 |---|---|
-| `EmailSender` interface (`send(to, subject, body, attachment)`) | Mailpit locally, SES on AWS, one file to swap |
+| `EmailSender` interface (`send(to, subject, body, attachment)`) in `packages/shared/email.ts` (built: `SmtpEmailSender` for Mailpit) | Mailpit locally, SES on AWS, one file to swap |
+| S3 client config in `packages/shared/s3.ts` (built) | One place knows the endpoint: `localhost:4566` from the laptop, `AWS_ENDPOINT_URL` inside LocalStack Lambdas, default AWS endpoint on the real run |
 | `tradeDate` always passed in | Never read "today" from the clock inside the pipeline, so reruns are correct |
 | PDF rendering as a plain function: `renderNote(user, tradeDate) → { pdf, hash }` in `packages/pdf-worker/src/render-note.ts` (built) | Unit-testable without AWS; shared with the RabbitMQ version later. Deterministic: PDF `CreationDate` comes from `tradeDate`, so the same input gives identical bytes |
 

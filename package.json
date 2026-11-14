@@ -10,7 +10,8 @@
     "stack-smoke": "tsx scripts/stack-smoke.ts",
     "typecheck": "tsc",
     "test": "tsx --test \"packages/**/*.test.ts\"",
-    "render-sample": "tsx scripts/render-sample.ts"
+    "render-sample": "tsx scripts/render-sample.ts",
+    "run-batch": "tsx scripts/run-batch.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1164.0",

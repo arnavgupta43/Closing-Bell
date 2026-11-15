@@ -61,7 +61,7 @@ Horizontal arrows are **control flow** (Step Functions runs the steps in order).
 |---|---|---|
 | 0 | Reconcile | Exchange trade files are reconciled into Postgres. The pipeline waits; notes from unreconciled trades would have to be reissued. |
 | 1 | Trigger | `recon.completed` on EventBridge starts one execution with `{ "tradeDate": "2026-10-16" }`, named `notes-2026-10-16`. A second start for the same date is rejected. |
-| 2 | Extract | 8 parallel extractors, each owning a user-ID range, stream from the **read replica** with keyset pagination and write one file per 1,000 users to `batches/<date>/batch-NNNN.json`. Each file carries the users' emails, trades and charges. |
+| 2 | Extract | 8 parallel extractors, each owning a user-ID range, stream from the **read replica** with keyset pagination and write one file per 1,000 users to `batches/<date>/batch-RR-PPPP.json` (range, page). Each file carries the users' emails, trades and charges. |
 | 3 | Manifest | All batch files are listed in `manifest.json`: the day's to-do list and an audit record. |
 | 4 | Fan-out | Distributed Map starts one PDF Lambda per batch file, at most **N** at once. |
 | 5 | PDF Lambda | Per user: claim idempotency key → render PDF → sign → upload to `notes/<date>/<userId>.pdf` → email with the PDF attached. Returns `{ sent, failed[] }`. **Never touches Postgres.** |
@@ -149,9 +149,9 @@ Built in layers; each one runs and is tested before the next starts.
 - [x] **2. Batch from S3:** a real Lambda in LocalStack reads a batch, writes PDFs, sends email
   - [x] 2a. Batch processor: handler reads a batch from LocalStack S3, uploads PDFs, emails via Mailpit; run from the laptop (`npm run run-batch`)
   - [x] 2b. Deploy as a real Lambda in LocalStack: esbuild bundle, Lambda → Mailpit networking (`npm run deploy-lambda`, `npm run invoke-batch`)
-- [ ] **3. Seed + Extract:** synthetic data; keyset-paginated, range-parallel extract; manifest
+- [x] **3. Seed + Extract:** synthetic data; keyset-paginated, range-parallel extract; manifest
   - [x] Seed script: deterministic users + trades for a given date (`npm run seed`)
-  - [ ] Extract, manifest
+  - [x] Extract (replica, keyset, 2 parallel ranges) and manifest; end to end through the deployed Lambda (`npm run extract`, `npm run build-manifest`, `npm run send-manifest`)
 - [ ] **4. Step Functions:** the full workflow with concurrency limits, retries, failure tolerance
 - [ ] **5. Hardening:** idempotency keys, bulk status write, chaos tests asserting no duplicate emails
 - [ ] **6. User path:** API returning a presigned URL for a user's note

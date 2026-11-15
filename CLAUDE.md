@@ -50,8 +50,13 @@ npm run render-sample         # writes out/sample-note.pdf from the test fixture
 npm run run-batch             # sample batch → LocalStack S3 → PDF worker handler → S3 notes + Mailpit (needs docker up)
 npm run deploy-lambda         # build dist/pdf-worker.zip (esbuild) and create/update the pdf-worker Lambda in LocalStack; rerun after every LocalStack restart
 npm run invoke-batch          # sample batch → S3, invoke the deployed Lambda with { key }; prints result + log tail
+npm run extract -- --date 2026-10-16 --ranges 2 --batch-size 1000   # replica (:5443) → batches/<date>/batch-RR-PPPP.json; rerun-safe
+npm run build-manifest -- --date 2026-10-16   # list batches/<date>/ → manifest/<date>/manifest.json
+npm run send-manifest -- --date 2026-10-16    # invoke the deployed Lambda once per manifest file (stand-in for the Map; needs deploy-lambda)
 npm run typecheck
 ```
+
+`run-batch` and `invoke-batch` upload the sample to `samples/<date>/`, never `batches/<date>/`, so the sample users don't end up in the manifest.
 
 After changing the network in `docker-compose.yml`, run `docker compose down` then `up -d` (volumes are kept).
 

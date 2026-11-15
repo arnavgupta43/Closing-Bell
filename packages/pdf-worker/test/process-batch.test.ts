@@ -7,7 +7,7 @@ import type { Batch } from "../../shared/types.ts";
 import type { EmailSender } from "../../shared/email.ts";
 import { processBatch, type Deps } from "../src/process-batch.ts";
 
-const KEY = "batches/2026-10-16/batch-0001.json";
+const KEY = "batches/2026-10-16/batch-01-0001.json";
 
 const sampleBatch = (): Batch =>
   JSON.parse(readFileSync(new URL("./sample-batch.json", import.meta.url), "utf8"));

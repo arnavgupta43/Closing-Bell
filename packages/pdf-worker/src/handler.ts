@@ -1,5 +1,5 @@
 // Lambda entry point: wires the real S3 client and email sender into processBatch.
-// Event: { key: "batches/2026-10-16/batch-0001.json" } (one Distributed Map item in layer 4).
+// Event: { key: "batches/2026-10-16/batch-01-0001.json" } (one Distributed Map item in layer 4).
 
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { BUCKET, makeS3Client } from "../../shared/s3.ts";

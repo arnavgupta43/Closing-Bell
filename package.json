@@ -14,7 +14,10 @@
     "run-batch": "tsx scripts/run-batch.ts",
     "build-lambda": "tsx scripts/build-lambda.ts",
     "deploy-lambda": "npm run build-lambda && tsx scripts/deploy-lambda.ts",
-    "invoke-batch": "tsx scripts/invoke-batch.ts"
+    "invoke-batch": "tsx scripts/invoke-batch.ts",
+    "extract": "tsx scripts/extract.ts",
+    "build-manifest": "tsx scripts/build-manifest.ts",
+    "send-manifest": "tsx scripts/send-manifest.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1164.0",

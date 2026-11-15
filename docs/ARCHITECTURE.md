@@ -57,13 +57,21 @@ Horizontal arrows are control flow; vertical arrows are data.
 
 **Choosing N:** set from the email provider's send rate (see HLD §7). Locally N is small (5–10) because each concurrent Lambda is a Docker container on the laptop.
 
+**Built so far (layer 3):** Extract and BuildManifest run from the laptop; layer 4 moves them into the state machine (Extract as an ECS task per range, BuildManifest as a Lambda).
+- `packages/extract/src/extract-range.ts`: `extractRange(tradeDate, range, batchSize, deps)` is the keyset loop for one user range. Each page is one query on the **replica**: the next `batchSize` users who traded after the last user seen (`user_id > $after`, on the `(trade_date, user_id)` index), joined with all their trades, so one user is never split across files. Rows are grouped per user and `computeCharges` (`charges.ts`, simplified delivery rates) runs once per user. Files are named `batch-RR-PPPP.json` (range, page): deterministic, so a rerun overwrites with identical content, and ranges never collide.
+- Ranges come from `min`/`max(user_id)` for the date, split into equal ID widths (`splitRanges`). In layer 4 they are passed in as each task's input.
+- `packages/manifest/src/build-manifest.ts`: lists `batches/<date>/` (paginated `ListObjectsV2`), sorts, writes `manifest/<date>/manifest.json`, and returns `{ bucket, manifestKey, files }`, which Step Functions will hand to the Map.
+- `scripts/send-manifest.ts` stands in for the Map: it invokes the deployed PDF Lambda once per manifest entry, one at a time.
+- Not built (talking points): a replica-lag check against a reconciliation timestamp; a single snapshot transaction across pages (the data is frozen after reconciliation, so pages are consistent anyway); cleaning up stale files if a rerun produces fewer pages than the previous run (only happens if `batchSize` or the data changed between runs).
+
 ## 4. Storage layout
 
 ### S3 bucket `contract-notes`
 
 ```
-batches/<tradeDate>/batch-0001.json     # written by Extract, 1,000 users each
-batches/<tradeDate>/batch-0002.json
+batches/<tradeDate>/batch-01-0001.json  # written by Extract: range 01, page 0001, 1,000 users each
+batches/<tradeDate>/batch-01-0002.json
+batches/<tradeDate>/batch-02-0001.json  # range 02 numbers its own pages, so ranges never collide
 manifest/<tradeDate>/manifest.json      # written by BuildManifest
 notes/<tradeDate>/<userId>.pdf          # written by the PDF Lambda
 ```
@@ -91,7 +99,7 @@ Charges are calculated per user from their trades during extract and stored in t
 ## 5. Data contracts
 
 ```jsonc
-// batches/2026-10-16/batch-0042.json
+// batches/2026-10-16/batch-03-0042.json
 {
   "tradeDate": "2026-10-16",
   "users": [
@@ -110,13 +118,13 @@ Charges are calculated per user from their trades during extract and stored in t
 }
 
 // manifest/2026-10-16/manifest.json
-{ "tradeDate": "2026-10-16", "files": ["batches/2026-10-16/batch-0001.json", "…"] }
+{ "tradeDate": "2026-10-16", "files": ["batches/2026-10-16/batch-01-0001.json", "…"] }
 
 // PDF Lambda input (one Distributed Map item)
-{ "key": "batches/2026-10-16/batch-0042.json" }
+{ "key": "batches/2026-10-16/batch-03-0042.json" }
 
 // PDF Lambda result → goes to WrapUp, never to Postgres
-{ "key": "batches/2026-10-16/batch-0042.json", "sent": 997,
+{ "key": "batches/2026-10-16/batch-03-0042.json", "sent": 997,
   "failed": [{ "userId": "U1099", "reason": "invalid email" }] }
 ```
 
@@ -148,7 +156,7 @@ The PDF is uploaded **before** the email is sent, so an email failure never lose
 | `tradeDate` always passed in | Never read "today" from the clock inside the pipeline, so reruns are correct |
 | PDF rendering as a plain function: `renderNote(user, tradeDate) → { pdf, hash }` in `packages/pdf-worker/src/render-note.ts` (built) | Unit-testable without AWS; shared with the RabbitMQ version later. Deterministic: PDF `CreationDate` comes from `tradeDate`, so the same input gives identical bytes |
 
-## 8. Repo layout *(planned)*
+## 8. Repo layout *(planned; extract, manifest, pdf-worker and shared exist)*
 
 ```
 Closing-Bell/
@@ -159,7 +167,8 @@ Closing-Bell/
   infra/                    # state machine definition, deploy scripts
   packages/
     shared/                 # types, S3/DynamoDB clients, config
-    extract/                # stream DB → batch files
+    extract/                # replica → batch files (keyset pages per user range, charges)
+    manifest/               # Lambda: list batch files → manifest.json
     pdf-worker/             # Lambda: batch → PDFs → S3 → email
     wrap-up/                # Lambda: results → COPY note_status → summary
     api/                    # GET a user's note → presigned URL

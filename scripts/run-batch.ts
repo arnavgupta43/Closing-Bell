@@ -15,7 +15,8 @@ import type { Batch } from "../packages/shared/types.ts";
 
 const s3 = makeS3Client();
 const batch: Batch = JSON.parse(readFileSync("packages/pdf-worker/test/sample-batch.json", "utf8"));
-const key = `batches/${batch.tradeDate}/batch-0001.json`;
+// Not under batches/: that folder is the manifest's input, and the sample users aren't in Postgres.
+const key = `samples/${batch.tradeDate}/sample-batch.json`;
 
 await ensureBucket(s3);
 await s3.send(new PutObjectCommand({ Bucket: BUCKET, Key: key, Body: JSON.stringify(batch) }));

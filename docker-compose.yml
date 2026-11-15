@@ -48,6 +48,8 @@ services:
     environment:
       # Read from .env (gitignored). Compose refuses to start with a clear message if it's missing.
       LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN:?set LOCALSTACK_AUTH_TOKEN in .env}
+      # Start Lambda containers on this compose network, so a Lambda can reach "mailpit" by name.
+      LAMBDA_DOCKER_NETWORK: closing-bell
     volumes:
       # LocalStack runs each Lambda as its own container, so it needs to talk to Docker.
       - /var/run/docker.sock:/var/run/docker.sock
@@ -62,3 +64,8 @@ services:
 volumes:
   pg-primary-data:
   pg-replica-data:
+
+# A fixed network name (instead of "<folder>_default") so LAMBDA_DOCKER_NETWORK can point at it.
+networks:
+  default:
+    name: closing-bell

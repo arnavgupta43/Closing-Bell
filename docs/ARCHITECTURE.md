@@ -137,12 +137,14 @@ The PDF is uploaded **before** the email is sent, so an email failure never lose
 
 **Built so far (layer 2a):** the loop without the idempotency claim (that lands in layer 5). `processBatch(key, deps)` in `packages/pdf-worker/src/process-batch.ts` takes S3 and email as injected dependencies, so it is unit tested with fakes; `handler.ts` wires in the real S3 client and `SmtpEmailSender`. Users are processed one at a time: parallelism comes from many Lambdas, and the email quota sets the pace anyway. Until layer 5, invoking the same batch twice sends duplicate emails.
 
+**Packaging and deploy (layer 2b):** `scripts/build-lambda.ts` makes `dist/pdf-worker.zip`: esbuild bundles `handler.ts` with nodemailer and the AWS SDK into one CommonJS `index.js`; pdfkit is left external and installed into `node_modules/` inside the zip, because it loads its font files by path at runtime and breaks when bundled. `scripts/deploy-lambda.ts` creates or updates the `pdf-worker` function (`nodejs22.x`, handler `index.handler`, 60 s timeout, 512 MB) and is rerun after every LocalStack restart. `scripts/invoke-batch.ts` uploads the sample batch and invokes the function with `{ key }`, standing in for Extract and Step Functions.
+
 ## 7. Code boundaries
 
 | Boundary | Why it exists |
 |---|---|
 | `EmailSender` interface (`send(to, subject, body, attachment)`) in `packages/shared/email.ts` (built: `SmtpEmailSender` for Mailpit) | Mailpit locally, SES on AWS, one file to swap |
-| S3 client config in `packages/shared/s3.ts` (built) | One place knows the endpoint: `localhost:4566` from the laptop, `AWS_ENDPOINT_URL` inside LocalStack Lambdas, default AWS endpoint on the real run |
+| S3 client config in `packages/shared/s3.ts` (built) | One place knows the endpoint: `localhost:4566` from the laptop, `AWS_ENDPOINT_URL` inside LocalStack Lambdas, default AWS endpoint and IAM-role credentials on the real run (detected by `AWS_LAMBDA_FUNCTION_NAME` with no endpoint override) |
 | `tradeDate` always passed in | Never read "today" from the clock inside the pipeline, so reruns are correct |
 | PDF rendering as a plain function: `renderNote(user, tradeDate) → { pdf, hash }` in `packages/pdf-worker/src/render-note.ts` (built) | Unit-testable without AWS; shared with the RabbitMQ version later. Deterministic: PDF `CreationDate` comes from `tradeDate`, so the same input gives identical bytes |
 
@@ -179,6 +181,9 @@ Closing-Bell/
 | Email | Mailpit catches everything; nothing leaves the laptop | SES sandbox: only verified addresses until production access |
 | Read replica | Hand-built async streaming replica (`pg_basebackup` + replication slot) | RDS creates and manages the replica; same async streaming underneath, lag visible as `ReplicaLag` in CloudWatch |
 | Concurrency | 5–10 Lambdas (laptop limits) | Set from the SES quota |
+| Lambda networking | LocalStack starts each Lambda as a Docker container on the `closing-bell` network (`LAMBDA_DOCKER_NETWORK`), so it reaches Mailpit as `mailpit:1025`; LocalStack injects `AWS_ENDPOINT_URL` for S3 | S3 and SES are public AWS endpoints, reachable from a Lambda by default (no VPC needed, since the worker never touches Postgres) |
+| Lambda cold start | ~15 s on first invoke (LocalStack starts a container); warm invokes ~0.2 s | ~1 s cold start |
+| Lambda metrics | `Max Memory Used` in the REPORT line just echoes the configured size | Real measurement, used to tune `MemorySize` |
 | Performance numbers | Not meaningful | Measured in the real AWS run |
 | Distributed Map | To be verified in the LocalStack smoke test; fallback is an inline Map over the manifest | Native |
 

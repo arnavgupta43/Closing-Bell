@@ -48,7 +48,11 @@ npm run stack-smoke           # LocalStack S3 + Mailpit email round trip
 npm test                      # unit tests (node:test via tsx)
 npm run render-sample         # writes out/sample-note.pdf from the test fixture
 npm run run-batch             # sample batch → LocalStack S3 → PDF worker handler → S3 notes + Mailpit (needs docker up)
+npm run deploy-lambda         # build dist/pdf-worker.zip (esbuild) and create/update the pdf-worker Lambda in LocalStack; rerun after every LocalStack restart
+npm run invoke-batch          # sample batch → S3, invoke the deployed Lambda with { key }; prints result + log tail
 npm run typecheck
 ```
+
+After changing the network in `docker-compose.yml`, run `docker compose down` then `up -d` (volumes are kept).
 
 Schema lives in `db/primary/02-schema.sql` and only runs on an empty volume: after changing it, `down -v` then `up -d`.
